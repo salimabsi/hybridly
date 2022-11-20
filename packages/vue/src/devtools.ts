@@ -3,6 +3,7 @@ import { registerHook } from '@hybridly/core'
 import type { App, Plugin } from 'vue'
 import { triggerRef } from 'vue'
 import { state } from './stores/state'
+import { dialogStore } from './stores/dialog'
 
 declare const __VUE_PROD_DEVTOOLS__: boolean
 
@@ -37,13 +38,7 @@ export function setupDevtools(app: App) {
 			payload.instanceData.state.push({
 				type: hybridlyStateType,
 				key: 'component',
-				value: state.context.value?.view.name,
-			})
-
-			payload.instanceData.state.push({
-				type: hybridlyStateType,
-				key: 'version',
-				value: state.context.value?.version,
+				value: state.context.value?.view.component,
 			})
 
 			payload.instanceData.state.push({
@@ -54,8 +49,29 @@ export function setupDevtools(app: App) {
 
 			payload.instanceData.state.push({
 				type: hybridlyStateType,
+				key: 'version',
+				value: state.context.value?.version,
+			})
+
+			payload.instanceData.state.push({
+				type: hybridlyStateType,
+				key: 'dialog',
+				value: state.context.value?.dialog,
+			})
+
+			payload.instanceData.state.push({
+				type: hybridlyStateType,
 				key: 'router',
 				value: state.routes.value,
+			})
+
+			payload.instanceData.state.push({
+				type: hybridlyStateType,
+				key: 'state',
+				value: {
+					viewKey: state.viewKey,
+					dialog: dialogStore.state,
+				},
 			})
 		})
 

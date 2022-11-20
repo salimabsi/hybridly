@@ -50,13 +50,13 @@ export async function initializeContext(options: RouterContextOptions): Promise<
 /**
  * Mutates properties at the top-level of the context.
  */
-export function setContext(merge: Partial<InternalRouterContext> = {}, options: SetContextOptions = {}): void {
+export async function setContext(merge: Partial<InternalRouterContext> = {}, options: SetContextOptions = {}): Promise<void> {
 	Object.keys(merge).forEach((key) => {
 		Reflect.set(state.context, key, merge[key as keyof InternalRouterContext])
 	})
 
 	if (options.propagate !== false) {
-		state.context.adapter.update?.(state.context)
+		await state.context.adapter.update?.(state.context)
 	}
 
 	debug.context('Updated context:', { context: state.context, added: merge })

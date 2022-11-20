@@ -2,6 +2,7 @@ import type { RequestData } from '@hybridly/utils'
 import type { AxiosProgressEvent, AxiosResponse } from 'axios'
 import type { Hooks } from '../plugins/hooks'
 import type { UrlResolvable, UrlTransformable } from '../url'
+import type { UnstackOptions } from './dialog'
 
 export type ConditionalNavigationOption =
 	| boolean
@@ -100,7 +101,9 @@ export interface Router {
 	abort: () => Promise<void>
 	/** Checks if there is an active navigate. */
 	active: () => boolean
-	/** Makes a navigate with the given options. */
+	/** Closes the current dialog. */
+	unstack: (options?: UnstackOptions) => void
+	/** Makes a navigation with the given options. */
 	navigate: (options: HybridRequestOptions) => Promise<NavigationResponse>
 	/** Reloads the current page. */
 	reload: (options?: HybridRequestOptions) => Promise<NavigationResponse>
@@ -148,9 +151,20 @@ export interface PendingNavigation {
 /** A page or dialog component. */
 export interface View {
 	/** Name of the component to use. */
-	name: string
+	component: string
 	/** Properties to apply to the component. */
 	properties: Properties
+}
+
+export interface Dialog extends View {
+	/** URL that is the base background page when navigating to the dialog directly. */
+	baseUrl: string
+	/** URL to which the dialog should redirect when closed. */
+	redirectUrl: string
+	/** Identifier for the state of the dialog. */
+	key: string
+	/** Unique string changed for each request. */
+	nonce: string
 }
 
 export type Property =
@@ -173,13 +187,14 @@ export interface SwapOptions<T> {
 	component: T
 	/** Whether to preserve the state of the component. */
 	preserveState?: boolean
+	/** Current dialog. */
+	dialog?: Dialog
 }
 
 export type ViewComponent = any
 export type DialogComponent = any
 export type ResolveComponent = (name: string) => Promise<ViewComponent>
 export type SwapView = (options: SwapOptions<ViewComponent>) => Promise<void>
-export type SwapDialog = (options: SwapOptions<DialogComponent>) => Promise<void>
 
 /*
 |--------------------------------------------------------------------------
@@ -192,7 +207,7 @@ export interface HybridPayload {
 	/** The view to use in this request. */
 	view: View
 	/** An optional dialog. */
-	dialog?: View
+	dialog?: Dialog
 	/** The current page URL. */
 	url: string
 	/** The current asset version. */

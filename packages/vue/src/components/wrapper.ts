@@ -3,6 +3,7 @@ import type { RouterContext } from '@hybridly/core'
 import { debug } from '@hybridly/utils'
 import type { PropType } from 'vue'
 import { defineComponent, h } from 'vue'
+import { dialogStore } from '../stores/dialog'
 import { state } from '../stores/state'
 
 export const wrapper = defineComponent({
@@ -16,34 +17,36 @@ export const wrapper = defineComponent({
 			}
 		}
 
-		function renderLayout(child: any) {
+		function renderLayout() {
 			debug.adapter('vue:render:layout', 'Rendering layout.')
 
+			const view = renderView()
+
 			if (typeof state.view.value?.layout === 'function') {
-				return state.view.value.layout(h, child)
+				return state.view.value.layout(h, view)
 			}
 
 			if (Array.isArray(state.view.value?.layout)) {
 				return state.view
-					.value!.layout.concat(child)
+					.value!.layout.concat(view)
 					.reverse()
-					.reduce((child, layout) => {
+					.reduce((view, layout) => {
 						layout.inheritAttrs = !!layout.inheritAttrs
 
-						return h(layout, {
-							...(state.view.value?.layoutProperties ?? {}),
-							...state.context.value!.view.properties,
-						}, () => child)
+						return [
+							h(layout, {
+								...(state.view.value?.layoutProperties ?? {}),
+								...state.context.value!.view.properties,
+							}, () => view),
+							renderDialog(),
+						]
 					})
 			}
 
-			return [
-				h(state.view.value?.layout, {
-					...(state.view.value?.layoutProperties ?? {}),
-					...state.context.value!.view.properties,
-				}, () => child),
-				renderDialog(),
-			]
+			return h(state.view.value?.layout, {
+				...(state.view.value?.layoutProperties ?? {}),
+				...state.context.value!.view.properties,
+			}, () => view)
 		}
 
 		function renderView() {
@@ -57,20 +60,18 @@ export const wrapper = defineComponent({
 		}
 
 		function renderDialog() {
-			debug.adapter('vue:render:dialog', 'Rendering dialog.')
+			if (dialogStore.state.component.value && dialogStore.state.properties.value) {
+				debug.adapter('vue:render:dialog', 'Rendering dialog.')
 
-			if (state.dialog.value) {
-				return h(state.dialog.value!, {
-					...state.dialog.value.properties,
-					key: state.dialogKey.value,
+				return h(dialogStore.state.component.value!, {
+					...dialogStore.state.properties.value,
+					key: dialogStore.state.key.value,
 				})
 			}
 		}
 
 		return () => {
 			if (state.view.value) {
-				const view = renderView()
-
 				if (state.viewLayout.value) {
 					state.view.value.layout = state.viewLayout.value
 					state.viewLayout.value = undefined
@@ -82,10 +83,10 @@ export const wrapper = defineComponent({
 				}
 
 				if (state.view.value.layout) {
-					return renderLayout(view)
+					return renderLayout()
 				}
 
-				return [view, renderDialog()]
+				return [renderView(), renderDialog()]
 			}
 		}
 	},

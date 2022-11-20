@@ -10,6 +10,7 @@ import { wrapper } from './components/wrapper'
 import { state } from './stores/state'
 import { plugin } from './devtools'
 import type { RouteCollection } from './routes'
+import { dialogStore } from './stores/dialog'
 
 export async function initializeHybridly(options: HybridlyOptions) {
 	const { element, payload, resolve } = prepare(options)
@@ -24,22 +25,35 @@ export async function initializeHybridly(options: HybridlyOptions) {
 
 	// This causes an issue on first load, the same component renders twice.
 	// Not sure of the side effects so let's keep it commented for now.
-	// state.setView(await resolve(payload.view.name))
+	// state.setView(await resolve(payload.view.component))
 	state.setContext(await createRouter({
 		axios: options.axios,
 		plugins: options.plugins,
 		serializer: options.serializer,
 		adapter: {
 			resolveComponent: resolve,
-			swapDialog: async() => {},
+			unstack: async() => {
+				dialogStore.hide()
+			},
 			swapView: async(options) => {
+				debug.adapter('vue', 'Swapping view.', options)
 				state.setView(options.component)
 
-				if (!options.preserveState) {
+				if (!options.preserveState && !dialogStore.state.show) {
 					state.setViewKey(Date.now())
 				}
+
+				if (options.dialog && !options.preserveState) {
+					dialogStore.setKey(Date.now() + Date.now())
+				}
+
+				if (options.dialog) {
+					dialogStore.setComponent(await state.context.value?.adapter.resolveComponent(options.dialog.component))
+					dialogStore.setProperties(options.dialog.properties)
+					dialogStore.show()
+				}
 			},
-			update: (context) => {
+			update: async(context) => {
 				state.setContext(context)
 			},
 		},

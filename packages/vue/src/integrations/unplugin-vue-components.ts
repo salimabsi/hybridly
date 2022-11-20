@@ -10,6 +10,7 @@ export const HybridlyImports = {
 		'useBackForward',
 		'useContext',
 		'useForm',
+		'useDialog',
 		'useHistoryState',
 		'usePaginator',
 		'defineLayout',

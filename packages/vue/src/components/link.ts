@@ -62,7 +62,7 @@ export const RouterLink = defineComponent({
 						...props.options,
 					})
 				},
-			}, slots)
+			}, slots.default ? slots : props.text)
 		}
 	},
 	props: {
@@ -93,6 +93,11 @@ export const RouterLink = defineComponent({
 		options: {
 			type: Object as PropType<Omit<HybridRequestOptions, 'url' | 'data' | 'method'>>,
 			default: () => ({}),
+		},
+		text: {
+			type: String,
+			required: false,
+			default: undefined,
 		},
 	},
 })
