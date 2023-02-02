@@ -8,7 +8,7 @@
         }
     ],
     "require": {
-        "php": "~8.0.0 || ~8.1.0 || ~8.2.0",
+        "php": "~8.1.0 || ~8.2.0",
         "composer-runtime-api": "^2.1",
         "illuminate/contracts": "^9.0",
         "spatie/laravel-package-tools": "^1.9.2"
@@ -33,12 +33,14 @@
     },
     "autoload": {
         "files": [
+            "packages/datatables/src/helpers.php",
             "packages/laravel/src/helpers.php"
         ],
         "psr-4": {
             "Hybridly\\": [
                 "packages/laravel/src"
             ],
+            "Hybridly\\Tables\\": "packages/datatables/src",
             "Hybridly\\Tests\\": "tests/src",
             "Hybridly\\Tests\\Database\\Factories\\": "tests/database/factories"
         }
@@ -53,11 +55,9 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Hybridly\\HybridlyServiceProvider"
-            ],
-            "aliases": {
-                "Hybridly": "Hybridly\\Facades\\Hybridly"
-            }
+                "Hybridly\\ServiceProvider",
+                "Hybridly\\Tables\\ServiceProvider"
+            ]
         }
     },
     "config": {
@@ -75,15 +75,16 @@
         "lint:fix": "vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --allow-risky=yes",
         "analyze": "vendor/bin/phpstan analyse",
         "test": "pest",
-				"xray": "vendor/bin/x-ray ./tests ./packages/laravel --snippets --github --no-progress",
+        "xray": "vendor/bin/x-ray ./tests ./packages/laravel --snippets --github --no-progress",
         "ci": [
             "@monorepo:validate",
             "@lint",
             "@test",
-						"@xray"
+            "@xray"
         ]
     },
     "replace": {
+        "hybridly/datatables": "self.version",
         "hybridly/laravel": "self.version"
     },
     "minimum-stability": "stable",

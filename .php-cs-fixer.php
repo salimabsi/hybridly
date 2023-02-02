@@ -15,9 +15,11 @@ $finder = Symfony\Component\Finder\Finder::create()
 return (new PhpCsFixer\Config())
     ->setRules([
         '@PSR12' => true,
+        '@Symfony' => true,
         '@PhpCsFixer:risky' => true,
         'comment_to_phpdoc' => false,
         'is_null' => false,
+        'types_spaces' => true,
         'ternary_operator_spaces' => true,
         'array_syntax' => ['syntax' => 'short'],
         'ordered_imports' => ['sort_algorithm' => 'alpha'],
